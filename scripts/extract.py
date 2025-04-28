@@ -54,7 +54,7 @@ def index_bam(bam):
         sys.exit('[extract] Error: unable to index bam file.')
         
 
-def extract_reads(bam, outdir, paired, unmapped, alts, temp, threads):
+def extract_reads(bam, outdir, paired, unmapped, alts, alt_contigs, temp, threads):
     '''Extracts reads from chromosome 6 and alts/decoys if applicable.'''
     
     log.info(f'[extract] Extracting reads from {bam}')
@@ -104,6 +104,17 @@ def extract_reads(bam, outdir, paired, unmapped, alts, temp, threads):
     
     # Check for alts in header and extract reads if present
     for alt in alts:
+        if alt in header:
+            command = ['samtools', 'view', '-@'+threads]
+            
+            if paired: command.append('-f 2')
+            else: command.append('-F 4')
+            
+            command.extend([bam, alt+':', '>>', hla_filtered])
+            run_command(command)
+
+    # Check for Chr6 alternative contigs and extract reads if present
+    for alt in alt_contigs:
         if alt in header:
             command = ['samtools', 'view', '-@'+threads]
             
@@ -280,6 +291,10 @@ if __name__ == '__main__':
     #    alts = pickle.load(file)
     with open(datDir + 'info/decoys_alts.json', 'r') as file:
         alts = json.load(file)
+        
+    with open(datDir + 'info/alternate_contigs.json', 'r') as file:
+        alt_contigs = json.load(file)
+
 
     if args.allreads:
         bam_to_fastq(args.bam, outdir, not args.single, temp, args.threads)
@@ -290,6 +305,7 @@ if __name__ == '__main__':
                       not args.single,
                       args.unmapped,
                       alts,
+                      alt_contigs,
                       temp,
                       args.threads)
 
