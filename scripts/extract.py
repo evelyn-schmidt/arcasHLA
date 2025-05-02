@@ -78,13 +78,13 @@ def extract_reads(bam, outdir, paired, unmapped, alts, alt_contigs, temp, thread
         chrom = '6'
 
     # Extract BAM header
-    message = '[extract] Extracting chromosome 6: '
+    message = '[extract] Extracting chromosome 6 header: '
     command = ['samtools', 'view', '-H', '-@'+threads]
     command.extend([bam, '-o', hla_filtered])
     run_command(command, message)
     
     # Extracted reads mapped to chromosome 6
-    message = '[extract] Extracting chromosome 6: '
+    message = '[extract] Extracting chromosome 6 reads: '
     command = ['samtools', 'view', '-@'+threads]
     if paired: command.append('-f 2')
     else: command.append('-F 4')
@@ -103,6 +103,7 @@ def extract_reads(bam, outdir, paired, unmapped, alts, alt_contigs, temp, thread
         run_command(command, message)
     
     # Check for alts in header and extract reads if present
+    log.info("Check for alts in header and extract reads if present")
     for alt in alts:
         if alt in header:
             command = ['samtools', 'view', '-@'+threads]
@@ -114,6 +115,7 @@ def extract_reads(bam, outdir, paired, unmapped, alts, alt_contigs, temp, thread
             run_command(command)
 
     # Check for Chr6 alternative contigs and extract reads if present
+    log.info("Check for Chr6 alternative contigs and extract reads if present")
     for alt in alt_contigs:
         if alt in header:
             command = ['samtools', 'view', '-@'+threads]
